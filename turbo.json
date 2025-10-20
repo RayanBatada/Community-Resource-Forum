@@ -32,6 +32,12 @@
     "lint:fix": {
       "dependsOn": []
     },
+    "prettier": {
+      "dependsOn": []
+    },
+    "prettier:check": {
+      "dependsOn": []
+    },
     "typecheck": {
       "dependsOn": []
     }

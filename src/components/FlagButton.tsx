@@ -16,15 +16,20 @@ export default function FlagButton({ postId, userId }: FlagButtonProps) {
     }
 
     try {
-      if (!flagged) {
-        // TODO: Call POST /api/flags with { postId, userId }
-        setFlagged(true);
+      const res = await fetch("/api/flags", {
+        method: flagged ? "DELETE" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, postId }),
+      });
+
+      if (res.ok) {
+        setFlagged(!flagged);
       } else {
-        // TODO: Call DELETE /api/flags with { postId, userId }
-        setFlagged(false);
+        const text = await res.text();
+        console.error("Flag API error:", text);
       }
     } catch (err) {
-      console.error(err);
+      console.error("Network error:", err);
     }
   };
 
@@ -35,7 +40,7 @@ export default function FlagButton({ postId, userId }: FlagButtonProps) {
         flagged ? "text-red-600" : "text-gray-500"
       }`}
     >
-      🚩 {flagged ? "Flagged" : "Flag"}
+      {flagged ? "Flagged" : "🚩"}
     </button>
   );
 }
