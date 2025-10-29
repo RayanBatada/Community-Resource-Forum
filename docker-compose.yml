@@ -46,7 +46,7 @@ services:
       mysql-dev:
         condition: service_healthy
     volumes:
-      - ./migrations/:/migrations
+      - ./migrations/:/migrations:ro
     command: >
       schema clean
         -u "mysql://root:password@mysql-dev:3306/dev" 
