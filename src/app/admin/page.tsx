@@ -22,6 +22,7 @@ export default async function AdminPage() {
       sql`(SELECT COUNT(*) FROM ${flags} WHERE ${flags.postId} = ${posts.id}) DESC`,
     );
 
+  // want to add in flagCount on each post within the return statement
   return (
     <div className="mx-auto flex w-full max-w-xl flex-col gap-6 px-6 py-6">
       {results.length === 0 ? (
@@ -30,24 +31,32 @@ export default async function AdminPage() {
         </p>
       ) : (
         results.map(({ post, author, event, flagCount }) => (
-          <Post
+          <div
             key={post.id}
-            post={{
-              id: post.id,
-              createdAt: post.createdAt,
-              updatedAt: post.updatedAt,
-              content: post.content,
-              authorId: post.authorId,
-              eventId: post.eventId,
-              score: post.score ?? 0,
-              commentCount: post.commentCount ?? 0,
-              flagCount: Number(flagCount) ?? 0,
-            }}
-            profile={author!}
-            event={event!}
-            vote={null}
-            session={null}
-          />
+            className="border-gray-10 flex flex-col gap-2 border-b pb-4"
+          >
+            <p className="text-xs font-medium text-gray-500">
+              🚩 {Number(flagCount)}{" "}
+              {Number(flagCount) === 1 ? "flag" : "flags"}
+            </p>
+            <Post
+              post={{
+                id: post.id,
+                createdAt: post.createdAt,
+                updatedAt: post.updatedAt,
+                content: post.content,
+                authorId: post.authorId,
+                eventId: post.eventId,
+                score: post.score ?? 0,
+                commentCount: post.commentCount ?? 0,
+                flagCount: Number(flagCount) ? Number(flagCount) : 0,
+              }}
+              profile={author!}
+              event={event!}
+              vote={null}
+              session={null}
+            />
+          </div>
         ))
       )}
     </div>
