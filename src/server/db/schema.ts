@@ -176,7 +176,6 @@ export const tags = mysqlTable("tag", (d) => ({
 export const tagsRelations = relations(tags, ({ many }) => ({
   posts: many(tagsToPosts),
   subscribers: many(subscriptions),
-  children: many(tags),
 }));
 
 export const tagsToPosts = mysqlTable(
@@ -209,6 +208,10 @@ export const profiles = mysqlTable("profile", (d) => ({
   id: d.varchar({ length: 255 }).primaryKey().$defaultFn(createId),
   type: d.mysqlEnum(["user", "organization"]).notNull(),
   name: d.varchar({ length: 255 }).notNull(),
+  bio: d.text({}),
+  linkedin: d.varchar({ length: 255 }),
+  github: d.varchar({ length: 255 }),
+  personalSite: d.varchar({ length: 255 }),
   image: d.varchar({ length: 255 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").onUpdateNow(),
@@ -227,8 +230,8 @@ export const users = mysqlTable(
       .primaryKey()
       .references(() => profiles.id),
     email: varchar("email", { length: 255 }).notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").onUpdateNow(),
+    createdAt: d.timestamp("created_at").defaultNow().notNull(),
+    updatedAt: d.timestamp("updated_at").onUpdateNow(),
   }),
   (t) => [uniqueIndex("email_idx").on(lower(t.email))],
 );
@@ -337,8 +340,7 @@ export const flags = mysqlTable(
       .references(() => posts.id, { onDelete: "cascade" }),
     createdAt: d.timestamp().defaultNow().notNull(),
   }),
-  (t) => [
-    primaryKey({ columns: [t.userId, t.postId] })],
+  (t) => [primaryKey({ columns: [t.userId, t.postId] })], // max one flag per user per post
 );
 
 export const flagRelations = relations(flags, ({ one }) => ({

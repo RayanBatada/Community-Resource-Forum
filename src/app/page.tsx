@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   PiCalendarBlank,
   PiChatCircleTextBold,
-  PiDotsThreeBold,
   PiHash,
   PiShareFatBold,
   PiXBold,
@@ -167,11 +166,9 @@ export default async function HomePage({
                   </span>
                 </Link>
 
-                <FlagButton postId={post.id} userId={session?.userId ?? ""} />
-
-                <button className="-m-0.5 rounded-full p-0.5 hover:bg-gray-200">
-                  <PiDotsThreeBold />
-                </button>
+                {session && (
+                  <FlagButton postId={post.id} userId={session?.userId} />
+                )}
               </div>
 
               {post.content && (
@@ -204,11 +201,11 @@ export default async function HomePage({
                 </Link>
               )}
 
-              <FlagButton postId={post.id} userId={session?.userId ?? ""} />
-
-              <button className="-m-0.5 rounded-full p-0.5 hover:bg-gray-200">
-                <PiDotsThreeBold />
-              </button>
+                  <button className="rounded-xs px-2 py-0.5 text-xs font-bold text-sky-800 uppercase ring-sky-800/50 hover:bg-sky-100 hover:ring">
+                    RSVP
+                  </button>
+                </Link>
+              )}
             </div>
 
             <div className="flex flex-wrap items-center justify-start gap-y-1 pb-2 text-xs">
