@@ -39,8 +39,8 @@ export default async function AdminPage() {
               content: post.content,
               authorId: post.authorId,
               eventId: post.eventId,
-              score: post.score ?? 0,
-              commentCount: post.commentCount ?? 0,
+              score: post.score,
+              commentCount: post.commentCount,
               flagCount: Number(flagCount) ?? 0,
             }}
             profile={author!}
