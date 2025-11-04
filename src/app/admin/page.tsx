@@ -40,6 +40,7 @@ export default async function AdminPage() {
               {Number(flagCount) === 1 ? "flag" : "flags"}
             </p>
             <Post
+              key={post.id}
               post={{
                 id: post.id,
                 createdAt: post.createdAt,
