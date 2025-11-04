@@ -29,7 +29,6 @@ export default async function AdminPage() {
           There aren’t any flagged posts yet.
         </p>
       ) : (
-        {/* show # of flags up here */}
         results.map(({ post, author, event, flagCount }) => (
           <Post
             key={post.id}
