@@ -6,6 +6,7 @@ import {
   PiPlus,
   PiSignInBold,
   PiSignOut,
+  PiUser,
 } from "react-icons/pi";
 import devdog from "~/assets/devdog.png";
 import signIn from "~/server/actions/signIn";
@@ -40,6 +41,16 @@ export default async function Navigation() {
               align="end"
               sideOffset={4}
             >
+              <Dropdown.Item asChild>
+                <Link
+                  href={`/profile/${session.userId}`}
+                  className="flex items-center gap-3 py-1 pr-6 pl-3 transition-colors hover:bg-gray-200"
+                >
+                  <PiUser />
+                  Your Profile
+                </Link>
+              </Dropdown.Item>
+              
               <Dropdown.Item asChild>
                 <Link
                   href="/create/post"

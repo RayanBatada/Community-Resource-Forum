@@ -23,7 +23,7 @@ jobs:
       - name: Validate Formatting and Linting
         run: SKIP_ENV_VALIDATION=true pnpm turbo lint prettier typecheck
       - name: Dry Run Project Deployment (for PRs)
-        if: ${{ github.event_name == 'pull_request' }}
+        if: ${{ github.event_name == 'pull_request_target' }}
         run: |
           SKIP_ENV_VALIDATION=true pnpm turbo build
           pnpm dlx vercel env pull ${{ env.ENV_CONFIG }} --token=${{ secrets.VERCEL_TOKEN }} .env
