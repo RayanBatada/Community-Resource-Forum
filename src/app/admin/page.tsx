@@ -29,6 +29,7 @@ export default async function AdminPage() {
           There aren’t any flagged posts yet.
         </p>
       ) : (
+        {/* show # of flags up here */}
         results.map(({ post, author, event, flagCount }) => (
           <Post
             key={post.id}
@@ -39,8 +40,8 @@ export default async function AdminPage() {
               content: post.content,
               authorId: post.authorId,
               eventId: post.eventId,
-              score: post.score ?? 0,
-              commentCount: post.commentCount ?? 0,
+              score: post.score,
+              commentCount: post.commentCount,
               flagCount: Number(flagCount) ?? 0,
             }}
             profile={author!}
