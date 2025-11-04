@@ -181,7 +181,7 @@ export default async function HomePage({
               {event && (
                 <Link
                   className="mt-3 flex flex-1 items-center gap-3 rounded-sm border border-gray-300 bg-gray-50 px-2 py-1.5 text-xl text-black shadow-xs"
-                  href={`/event/${post.eventId}`}
+                  href={`/events/${post.eventId}`}
                 >
                   <span className="relative">
                     <PiCalendarBlank />
@@ -198,8 +198,6 @@ export default async function HomePage({
                       {formatEventTime(event)}
                     </span>
                   </span>
-                </Link>
-              )}
 
                   <button className="rounded-xs px-2 py-0.5 text-xs font-bold text-sky-800 uppercase ring-sky-800/50 hover:bg-sky-100 hover:ring">
                     RSVP

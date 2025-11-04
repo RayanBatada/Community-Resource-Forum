@@ -31,11 +31,12 @@ interface Props {
   score: number;
   value: typeof postVotes.$inferSelect.value | null;
   target: { postId: string } | { commentId: string };
+  [key: string]: number | string | boolean | null | { postId: string } | { commentId: string };
 }
 
-export default function VoteButton({ target, ...defaultState }: Props) {
-  const [formState, formAction, pending] = useActionState(vote, defaultState);
-  const [optimisticState, setOptimisticState] = useState(defaultState);
+export default function VoteButton({ target, score, value, ...props}: Props) {
+  const [formState, formAction, pending] = useActionState(vote, { score, value });
+  const [optimisticState, setOptimisticState] = useState({ score, value });
   const [dialogOpen, setDialogOpen] = useState(false);
   const state = pending ? optimisticState : formState;
 
@@ -67,12 +68,14 @@ export default function VoteButton({ target, ...defaultState }: Props) {
         value={"postId" in target ? target.postId : target.commentId}
       />
 
+      {/* disabled:text-gray-600 data-[active=true]:disabled:text-emerald-800 */} 
       <button
-        className="group text-[2em] leading-none transition-colors hover:text-green-700 data-[active=true]:text-green-700"
+        className="group text-[2em] leading-none transition-colors hover:text-green-700 data-[active=true]:text-green-700" 
         data-active={state.value === "up"}
         name="value"
         value="up"
         type="submit"
+        {...props}
       >
         <PiArrowCircleUp className="group-[[data-active=true]]:hidden" />
         <PiArrowCircleUpFill className="hidden text-green-700 group-[[data-active=true]]:block" />
@@ -94,6 +97,7 @@ export default function VoteButton({ target, ...defaultState }: Props) {
             ? undefined
             : () => setDialogOpen(true)
         }
+        {...props}
       >
         <PiArrowCircleDown className="group-[[data-active=true]]:hidden" />
         <PiArrowCircleDownFill className="hidden text-red-700 group-[[data-active=true]]:block" />
