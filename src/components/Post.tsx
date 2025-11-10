@@ -26,12 +26,14 @@ export default function Post({
   event,
   vote,
   session,
+  readonly = false 
 }: {
   post: typeof posts.$inferSelect;
   profile: typeof profiles.$inferSelect;
   event: typeof events.$inferSelect;
   vote: typeof postVotes.$inferSelect | null;
   session: typeof sessions.$inferSelect | null;
+  readonly?: boolean; 
 }) {
   return (
     <article
@@ -57,7 +59,7 @@ export default function Post({
             </Link>
           </div>
 
-          {session && <FlagButton postId={post.id} userId={session.userId} />}
+          {session && <FlagButton postId={post.id} userId={session.userId} disabled={readonly} />}
         </div>
 
         {post.content && (
@@ -132,6 +134,7 @@ export default function Post({
               target={{ postId: post.id }}
               score={post.score ?? 0}
               value={vote ? vote.value : null}
+              disabled={readonly} 
             />
           </div>
         </div>

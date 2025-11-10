@@ -11,8 +11,8 @@ import {
 } from "react-icons/pi";
 import Avatar from "~/components/Avatar";
 import FlagButton from "~/components/FlagButton";
-import ShareDropdown from "~/components/ShareDropdown";
 import VoteButton from "~/components/VoteButton";
+import ShareDropdown from "~/components/ShareDropdown";
 import formatEventTime from "~/lib/formatEventTime";
 import { getSessionUser } from "~/server/auth";
 import { db } from "~/server/db";
@@ -142,6 +142,7 @@ export default async function HomePage({
           ))}
         </h1>
       )}
+
       {Array.from(postsResult.values()).map(
         ({ post, author, event, vote, tags }) => (
           <article
@@ -180,7 +181,7 @@ export default async function HomePage({
               {event && (
                 <Link
                   className="mt-3 flex flex-1 items-center gap-3 rounded-sm border border-gray-300 bg-gray-50 px-2 py-1.5 text-xl text-black shadow-xs"
-                  href={`/event/${post.eventId}`}
+                  href={`/events/${post.eventId}`}
                 >
                   <span className="relative">
                     <PiCalendarBlank />
@@ -232,9 +233,20 @@ export default async function HomePage({
                 className="flex items-center gap-2 rounded-full px-2 py-1 leading-none hover:bg-sky-100 hover:ring hover:ring-sky-800"
                 href={`/discussion/${post.id}?comment`}
               >
-                <PiChatCircleTextBold />
-                <span className="text-xs font-semibold">
-                  {post.commentCount}
+                <span className="relative">
+                  <PiCalendarBlank />
+                  <span className="absolute inset-0 top-1/2 w-full -translate-y-1/2 pt-px text-center text-[0.55rem] font-bold">
+                    {getDate(event!.start)}
+                  </span>
+                </span>
+
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span className="-mt-0.5 overflow-x-hidden text-sm/[1.25] overflow-ellipsis">
+                    {event!.title}
+                  </span>
+                  <span className="text-[0.6rem]/[1] font-bold text-gray-600">
+                    {formatEventTime(event!)}
+                  </span>
                 </span>
               </Link>
 
@@ -247,23 +259,24 @@ export default async function HomePage({
                 </button>
               </ShareDropdown>
 
-              <div className="ml-auto text-xs">
-                <VoteButton
-                  target={{ postId: post.id }}
-                  score={post.score}
-                  value={vote}
-                />
+                <div className="ml-auto text-xs">
+                  <VoteButton
+                    target={{ postId: post.id }}
+                    score={post.score}
+                    value={vote}
+                  />
+                </div> 
               </div>
-            </div>
           </article>
-        ),
-      )}
-      {postsResult.size === 0 && (
-        <p className="max-w-prose text-center text-sm text-gray-600">
-          There aren&rsquo;t any posts to display yet. Try signing in and
-          publishing some!
-        </p>
-      )}
+        ))}
+
+
+        {postsResult.size === 0 && (
+          <p className="max-w-prose text-center text-sm text-gray-600">
+            There aren&rsquo;t any posts to display yet. Try signing in and
+            publishing some!
+          </p>
+        )}
     </div>
-  );
-}
+  ); 
+} 

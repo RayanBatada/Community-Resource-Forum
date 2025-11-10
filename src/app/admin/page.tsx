@@ -47,6 +47,7 @@ export default async function AdminPage() {
             event={event!}
             vote={null}
             session={null}
+            readonly 
           />
         ))
       )}
