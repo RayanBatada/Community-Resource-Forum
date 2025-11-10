@@ -1,31 +1,26 @@
 "use client";
-
 import { useState } from "react";
-
 {
   /* rest of the code should have a remove post logic where the post is removed if readonly is true and the button is clicked */
 }
 {
   /* if the button is clicked, then it should called the remove post api to remove the post */
 }
-
 interface RemovePostProps {
   postId: string;
   userId: string;
 }
-
 export default function RemovePost({ postId, userId }: RemovePostProps) {
   const [removed, setRemoved] = useState(false);
-
   const handleRemove = async () => {
     if (removed) return;
 
-    const res = await fetch(`/api/posts/${postId}`, {
+    const res = await fetch(`/api/posts/`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${userId}`,
       },
+      body: JSON.stringify({ userId, postId }),
     });
 
     if (res.ok) {
@@ -34,7 +29,11 @@ export default function RemovePost({ postId, userId }: RemovePostProps) {
   };
 
   return (
-    <button onClick={handleRemove} disabled={removed}>
+    <button
+      onClick={handleRemove}
+      disabled={removed}
+      className={`rounded px-3 py-1 ${removed ? "cursor-not-allowed bg-gray-300" : "bg-red-500 text-white hover:bg-red-600"}`}
+    >
       {removed ? "Post Removed" : "Remove Post"}
     </button>
   );

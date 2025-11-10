@@ -3,6 +3,7 @@ import { posts, profiles, events, flags } from "~/server/db/schema";
 import { sql } from "drizzle-orm";
 
 import Post from "~/components/Post";
+import RemovePost from "~/components/RemovePost";
 
 export default async function AdminPage() {
   const results = await db
@@ -30,25 +31,36 @@ export default async function AdminPage() {
         </p>
       ) : (
         results.map(({ post, author, event, flagCount }) => (
-          <Post
+          <div
             key={post.id}
-            post={{
-              id: post.id,
-              createdAt: post.createdAt,
-              updatedAt: post.updatedAt,
-              content: post.content,
-              authorId: post.authorId,
-              eventId: post.eventId,
-              score: post.score,
-              commentCount: post.commentCount,
-              flagCount: Number(flagCount) ?? 0,
-            }}
-            profile={author!}
-            event={event!}
-            vote={null}
-            session={null}
-            readonly 
-          />
+            className="flex flex-col gap-2 rounded-lg border border-gray-200 p-4 shadow-sm"
+          >
+            <Post
+              key={post.id}
+              post={{
+                id: post.id,
+                createdAt: post.createdAt,
+                updatedAt: post.updatedAt,
+                content: post.content,
+                authorId: post.authorId,
+                eventId: post.eventId,
+                score: post.score,
+                commentCount: post.commentCount,
+                flagCount: Number(flagCount) ?? 0,
+              }}
+              profile={author!}
+              event={event!}
+              vote={null}
+              session={null}
+              readonly
+            />
+            <div className="flex justify-end">
+              <RemovePost
+                postId={post.id}
+                userId={author?.id ?? "admin"} // replace with admin ID if applicable
+              />
+            </div>
+          </div>
         ))
       )}
     </div>
