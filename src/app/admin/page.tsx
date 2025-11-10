@@ -4,6 +4,7 @@ import { sql } from "drizzle-orm";
 
 import Post from "~/components/Post";
 import RemovePost from "~/components/RemovePost";
+import KeepPost from "~/components/KeepPost";
 
 export default async function AdminPage() {
   const results = await db
@@ -54,7 +55,11 @@ export default async function AdminPage() {
               session={null}
               readonly
             />
-            <div className="flex justify-end">
+            <div className="flex justify-end space-x-4">
+              <KeepPost
+                postId={post.id}
+                userId={author?.id ?? "admin"}
+              />
               <RemovePost
                 postId={post.id}
                 userId={author?.id ?? "admin"} // replace with admin ID if applicable
