@@ -6,6 +6,7 @@ import {
   commentVotes,
   flags,
   tagsToPosts,
+  archivedPosts,
 } from "~/server/db/schema";
 import { eq, and, inArray } from "drizzle-orm";
 
@@ -77,6 +78,64 @@ export async function DELETE(request: Request) {
     });
   } catch (error) {
     console.error("Error deleting post:", error);
+    return new Response("Internal Server Error", { status: 500 });
+  }
+}
+
+// Delete a post and all associated data from posts table and insert into archivedPosts table 
+// Expects userId, postId
+export async function PUT(request: Request) {
+  try {
+    const data: unknown = await request.json(); 
+
+    if (
+      !(
+        typeof data === "object" &&
+        data !== null &&
+        "userId" in data &&
+        typeof data.userId === "string" &&
+        "postId" in data &&
+        typeof data.postId === "string"
+      )
+    ) {
+      return new Response("Missing userId or postId", { status: 400 });
+    }
+
+    const { userId, postId } = data; 
+
+    await db.transaction(async (tx) => {
+      // Fetch the post to be archived
+      const postToArchive = await tx
+        .select()
+        .from(posts)
+        .where(and(eq(posts.id, postId), eq(posts.authorId, userId)))
+        .limit(1);
+
+      if (postToArchive.length === 0) {
+        throw new Error("Post not found or unauthorized");
+      }
+
+      const post = postToArchive[0];
+
+      // Insert into archivedPosts table
+      await tx.insert(archivedPosts).values({
+        id: post!.id,
+        authorId: post!.authorId,
+        // title: post.title,
+        content: post!.content,
+        createdAt: post!.createdAt,
+        updatedAt: post!.updatedAt,
+      });
+
+      // Delete the original post
+      await tx.delete(posts).where(and(eq(posts.id, postId), eq(posts.authorId, userId)));
+    });
+
+    return new Response("Post archived successfully", {
+      status: 200,
+    });
+  } catch (error) {
+    console.error("Error archiving post:", error);
     return new Response("Internal Server Error", { status: 500 });
   }
 }

@@ -4,6 +4,7 @@ import { sql } from "drizzle-orm";
 
 import Post from "~/components/Post";
 import RemovePost from "~/components/RemovePost";
+import ArchivePost from "~/components/ArchivePost"; 
 import KeepPost from "~/components/KeepPost";
 
 export default async function AdminPage() {
@@ -60,7 +61,13 @@ export default async function AdminPage() {
                 postId={post.id}
                 userId={author?.id ?? "admin"}
               />
-              <RemovePost
+              {/* TODO: make dropdown menu with default action as remove post  */}
+
+              {/* <RemovePost
+                postId={post.id}
+                userId={author?.id ?? "admin"} // replace with admin ID if applicable
+              /> */}
+              <ArchivePost
                 postId={post.id}
                 userId={author?.id ?? "admin"} // replace with admin ID if applicable
               />
