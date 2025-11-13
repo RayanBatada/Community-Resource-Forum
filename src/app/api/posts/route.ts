@@ -53,7 +53,9 @@ export async function DELETE(request: Request) {
 
       // Delete comment votes tied to those comments
       if (commentIds.length > 0) {
-        await tx.delete(commentVotes).where(inArray(commentVotes.commentId, commentIds));
+        await tx
+          .delete(commentVotes)
+          .where(inArray(commentVotes.commentId, commentIds));
       }
 
       // Delete post votes
@@ -69,7 +71,9 @@ export async function DELETE(request: Request) {
       await tx.delete(comments).where(eq(comments.postId, postId));
 
       // Finally, delete the post itself
-      await tx.delete(posts).where(and(eq(posts.id, postId), eq(posts.authorId, userId)));
+      await tx
+        .delete(posts)
+        .where(and(eq(posts.id, postId), eq(posts.authorId, userId)));
     });
 
     return new Response("Post and related data deleted successfully", {
