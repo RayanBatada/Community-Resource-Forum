@@ -5,9 +5,13 @@ import { useState } from "react";
 interface FlagButtonProps {
   postId: string;
   userId: string;
-  [key: string]: string | boolean; 
+  [key: string]: string | boolean;
 }
-export default function FlagButton({ postId, userId, ...props }: FlagButtonProps) {
+export default function FlagButton({
+  postId,
+  userId,
+  ...props
+}: FlagButtonProps) {
   const [flagged, setFlagged] = useState(false);
 
   const handleFlag = async () => {
@@ -40,7 +44,7 @@ export default function FlagButton({ postId, userId, ...props }: FlagButtonProps
       className={`text-sm font-medium ${
         flagged ? "text-red-600" : "text-gray-500"
       }`}
-      {...props} 
+      {...props}
     >
       {flagged ? "Flagged" : "🚩"}
     </button>
