@@ -7,9 +7,13 @@ import { PiFlagBold, PiFlagFill } from "react-icons/pi";
 interface FlagButtonProps {
   postId: string;
   userId: string;
-  [key: string]: string | boolean; 
+  [key: string]: string | boolean;
 }
-export default function FlagButton({ postId, userId, ...props }: FlagButtonProps) {
+export default function FlagButton({
+  postId,
+  userId,
+  ...props
+}: FlagButtonProps) {
   const [flagged, setFlagged] = useState(false);
 
   const handleFlag = async () => {
@@ -42,7 +46,7 @@ export default function FlagButton({ postId, userId, ...props }: FlagButtonProps
       className={`cursor-pointer text-sm font-medium ${
         flagged ? "text-amber-500" : "text-gray-500"
       }`}
-      {...props} 
+      {...props}
     >
       {flagged ? <PiFlagFill className="text-lg" /> : <PiFlagBold className="text-lg" />}
     </button>
