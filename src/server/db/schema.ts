@@ -44,6 +44,7 @@ export const posts = mysqlTable(
       .references(() => profiles.id),
     eventId: d.varchar({ length: 255 }).references(() => events.id),
     score: d.int().notNull().default(0),
+    archived: d.boolean().notNull().default(false), 
     commentCount: d.int().notNull().default(0),
     flagCount: d.int().notNull().default(0),
     createdAt: d.timestamp().defaultNow().notNull(),
@@ -53,40 +54,6 @@ export const posts = mysqlTable(
 );
 
 export const postsRelations = relations(posts, ({ one, many }) => ({
-  tags: many(tagsToPosts),
-  flags: many(flags),
-  author: one(profiles, {
-    fields: [posts.authorId],
-    references: [profiles.id],
-  }),
-  event: one(events, {
-    fields: [posts.eventId],
-    references: [events.id],
-  }),
-  votes: many(postVotes),
-  comments: many(comments),
-}));
-
-export const archivedPosts = mysqlTable(
-  "archived_post",
-  (d) => ({
-    id: d.varchar({ length: 255 }).primaryKey().$defaultFn(createId),
-    content: d.text(),
-    authorId: d
-      .varchar({ length: 255 })
-      .notNull()
-      .references(() => profiles.id),
-    eventId: d.varchar({ length: 255 }).references(() => events.id),
-    score: d.int().notNull().default(0),
-    commentCount: d.int().notNull().default(0),
-    flagCount: d.int().notNull().default(0),
-    createdAt: d.timestamp().notNull(),
-    updatedAt: d.timestamp(),
-  }),
-  (t) => [index("author_idx").on(t.authorId)],
-);
-
-export const archivedPostsRelations = relations(posts, ({ one, many }) => ({
   tags: many(tagsToPosts),
   flags: many(flags),
   author: one(profiles, {
@@ -137,6 +104,7 @@ export const comments = mysqlTable(
     id: d.varchar({ length: 255 }).primaryKey().$defaultFn(createId),
     content: d.text().notNull(),
     score: d.int().notNull().default(0),
+    archived: d.boolean().notNull().default(false), 
     authorId: d
       .varchar({ length: 255 })
       .notNull()

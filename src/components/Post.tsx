@@ -17,7 +17,7 @@ import type {
   postVotes,
   posts,
   profiles,
-  sessions,
+  sessions, 
 } from "~/server/db/schema";
 
 export default function Post({

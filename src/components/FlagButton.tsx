@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+import { PiFlagBold, PiFlagFill } from "react-icons/pi"; 
+
 interface FlagButtonProps {
   postId: string;
   userId: string;
@@ -37,12 +39,12 @@ export default function FlagButton({ postId, userId, ...props }: FlagButtonProps
   return (
     <button
       onClick={handleFlag}
-      className={`text-sm font-medium ${
-        flagged ? "text-red-600" : "text-gray-500"
+      className={`cursor-pointer text-sm font-medium ${
+        flagged ? "text-amber-500" : "text-gray-500"
       }`}
       {...props} 
     >
-      {flagged ? "Flagged" : "🚩"}
+      {flagged ? <PiFlagFill className="text-lg" /> : <PiFlagBold className="text-lg" />}
     </button>
   );
 }
