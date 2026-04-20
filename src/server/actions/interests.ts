@@ -1,11 +1,11 @@
 "use server";
 
-import { eq, sql } from "drizzle-orm";
-import { db } from "~/server/db";
-import { tags, userInterests, users, postTags } from "~/server/db/schema/tables";
-import { getSession } from "~/server/auth";
-import { INTEREST_WEIGHTS } from "~/lib/recommendations/constants";
+import { and, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { INTEREST_WEIGHTS } from "~/lib/recommendations/constants";
+import { getSession } from "~/server/auth";
+import { db } from "~/server/db";
+import { postTags, tags, userInterests, users } from "~/server/db/schema/tables";
 
 /**
  * Save initial interests during onboarding
@@ -62,11 +62,6 @@ export async function skipOnboarding() {
 
 /**
  * Update interest weights based on voting behavior
- * Call this after a user votes on a post
- * 
- * @param postId - The post being voted on
- * @param isUpvote - true for upvote, false for downvote
- * @param previousVoteWasUpvote - null if no previous vote, true/false for previous vote type
  */
 export async function updateInterestsFromVote(
   postId: string,
@@ -85,22 +80,19 @@ export async function updateInterestsFromVote(
     .where(eq(postTags.postId, postId));
 
   if (postTagsResult.length === 0) {
-    return; // Post has no tags, nothing to update
+    return;
   }
 
   // Calculate weight delta
   let weightDelta = 0;
-  
+
   if (previousVoteWasUpvote === null) {
-    // New vote
     weightDelta = isUpvote ? INTEREST_WEIGHTS.UPVOTE : INTEREST_WEIGHTS.DOWNVOTE;
   } else if (previousVoteWasUpvote !== isUpvote) {
-    // Changed vote (upvote to downvote or vice versa)
-    weightDelta = isUpvote 
-      ? INTEREST_WEIGHTS.UPVOTE - INTEREST_WEIGHTS.DOWNVOTE  // +1.0
-      : INTEREST_WEIGHTS.DOWNVOTE - INTEREST_WEIGHTS.UPVOTE; // -1.0
+    weightDelta = isUpvote
+      ? INTEREST_WEIGHTS.UPVOTE - INTEREST_WEIGHTS.DOWNVOTE
+      : INTEREST_WEIGHTS.DOWNVOTE - INTEREST_WEIGHTS.UPVOTE;
   } else {
-    // Same vote, no change
     return;
   }
 
@@ -120,6 +112,16 @@ export async function updateInterestsFromVote(
           },
         });
     }
+
+    // Clean up: delete any interests with weight 0
+    await tx
+      .delete(userInterests)
+      .where(
+        and(
+          eq(userInterests.userProfileId, session.userProfileId),
+          eq(userInterests.weight, "0.00")
+        )
+      );
   });
 }
 
@@ -142,4 +144,50 @@ export async function getUserInterests() {
     .innerJoin(tags, eq(tags.id, userInterests.tagId))
     .where(eq(userInterests.userProfileId, session.userProfileId))
     .orderBy(sql`${userInterests.weight} DESC`);
+}
+
+/**
+ * Add a single interest
+ */
+export async function addInterest(tagId: string) {
+  const session = await getSession({});
+  if (!session?.userProfileId) {
+    throw new Error("Not authenticated");
+  }
+
+  await db
+    .insert(userInterests)
+    .values({
+      userProfileId: session.userProfileId,
+      tagId,
+      weight: "1.00",
+    })
+    .onDuplicateKeyUpdate({
+      set: {
+        weight: sql`${userInterests.weight} + 1`,
+      },
+    });
+
+  revalidatePath(`/profile/${session.userProfileId}/edit`);
+}
+
+/**
+ * Remove a single interest
+ */
+export async function removeInterest(tagId: string) {
+  const session = await getSession({});
+  if (!session?.userProfileId) {
+    throw new Error("Not authenticated");
+  }
+
+  await db
+    .delete(userInterests)
+    .where(
+      and(
+        eq(userInterests.userProfileId, session.userProfileId),
+        eq(userInterests.tagId, tagId)
+      )
+    );
+
+  revalidatePath(`/profile/${session.userProfileId}/edit`);
 }
