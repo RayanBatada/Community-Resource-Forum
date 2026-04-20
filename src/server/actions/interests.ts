@@ -1,15 +1,10 @@
-// This file contains server actions related to user interests and onboarding
 "use server";
 
 import { eq, sql } from "drizzle-orm";
 import { db } from "~/server/db";
-import { tags, userInterests, users } from "~/server/db/schema/tables";
+import { tags, userInterests, users, postTags } from "~/server/db/schema/tables";
 import { getSession } from "~/server/auth";
-import {
-  INTEREST_WEIGHTS,
-  VOTE_WEIGHT_MAP,
-  type VoteType,
-} from "~/lib/recommendations/constants";
+import { INTEREST_WEIGHTS } from "~/lib/recommendations/constants";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -22,7 +17,6 @@ export async function saveOnboardingInterests(tagIds: string[]) {
   }
 
   await db.transaction(async (tx) => {
-    // Insert selected interests with initial weight
     if (tagIds.length > 0) {
       await tx
         .insert(userInterests)
@@ -31,7 +25,7 @@ export async function saveOnboardingInterests(tagIds: string[]) {
             userProfileId: session.userProfileId,
             tagId,
             weight: INTEREST_WEIGHTS.INITIAL_SELECTION.toString(),
-          })),
+          }))
         )
         .onDuplicateKeyUpdate({
           set: {
@@ -40,7 +34,6 @@ export async function saveOnboardingInterests(tagIds: string[]) {
         });
     }
 
-    // Mark onboarding complete
     await tx
       .update(users)
       .set({ onboardingCompleted: true })
@@ -70,35 +63,60 @@ export async function skipOnboarding() {
 /**
  * Update interest weights based on voting behavior
  * Call this after a user votes on a post
+ * 
+ * @param postId - The post being voted on
+ * @param isUpvote - true for upvote, false for downvote
+ * @param previousVoteWasUpvote - null if no previous vote, true/false for previous vote type
  */
 export async function updateInterestsFromVote(
-  postTagIds: string[],
-  voteType: VoteType,
-  previousVote?: VoteType | null,
+  postId: string,
+  isUpvote: boolean,
+  previousVoteWasUpvote: boolean | null
 ) {
   const session = await getSession({});
-  if (!session?.userProfileId || postTagIds.length === 0) {
+  if (!session?.userProfileId) {
     return;
   }
 
-  const weightDelta = VOTE_WEIGHT_MAP[voteType];
-  const previousDelta = previousVote ? VOTE_WEIGHT_MAP[previousVote] : 0;
-  const netDelta = weightDelta - previousDelta;
+  // Get all tags for this post
+  const postTagsResult = await db
+    .select({ tagId: postTags.tagId })
+    .from(postTags)
+    .where(eq(postTags.postId, postId));
 
-  if (netDelta === 0) return;
+  if (postTagsResult.length === 0) {
+    return; // Post has no tags, nothing to update
+  }
 
+  // Calculate weight delta
+  let weightDelta = 0;
+  
+  if (previousVoteWasUpvote === null) {
+    // New vote
+    weightDelta = isUpvote ? INTEREST_WEIGHTS.UPVOTE : INTEREST_WEIGHTS.DOWNVOTE;
+  } else if (previousVoteWasUpvote !== isUpvote) {
+    // Changed vote (upvote to downvote or vice versa)
+    weightDelta = isUpvote 
+      ? INTEREST_WEIGHTS.UPVOTE - INTEREST_WEIGHTS.DOWNVOTE  // +1.0
+      : INTEREST_WEIGHTS.DOWNVOTE - INTEREST_WEIGHTS.UPVOTE; // -1.0
+  } else {
+    // Same vote, no change
+    return;
+  }
+
+  // Update weights for all tags on this post
   await db.transaction(async (tx) => {
-    for (const tagId of postTagIds) {
+    for (const { tagId } of postTagsResult) {
       await tx
         .insert(userInterests)
         .values({
           userProfileId: session.userProfileId,
           tagId,
-          weight: Math.max(INTEREST_WEIGHTS.MIN_WEIGHT, netDelta).toString(),
+          weight: Math.max(INTEREST_WEIGHTS.MIN_WEIGHT, weightDelta).toString(),
         })
         .onDuplicateKeyUpdate({
           set: {
-            weight: sql`GREATEST(${INTEREST_WEIGHTS.MIN_WEIGHT}, LEAST(${INTEREST_WEIGHTS.MAX_WEIGHT}, ${userInterests.weight} + ${netDelta}))`,
+            weight: sql`GREATEST(${INTEREST_WEIGHTS.MIN_WEIGHT}, LEAST(${INTEREST_WEIGHTS.MAX_WEIGHT}, ${userInterests.weight} + ${weightDelta}))`,
           },
         });
     }
